@@ -1,0 +1,19 @@
+{
+	"geode": "4.3.1",
+	"gd": {
+		"win": "2.2074",
+		"android": "2.2074",
+		"mac": "2.2074",
+		"ios": "2.2074"
+	},
+	"id": "nasafrasa.editor_ui_overhaul",
+	"name": "Editor UI Overhaul",
+	"version": "v1.0.0",
+	"developer": "nasafrasa",
+	"description": "",
+	"resources": {
+        "sprites": [
+            "resources/translucent_panel.png"
+        ]
+    }
+}
