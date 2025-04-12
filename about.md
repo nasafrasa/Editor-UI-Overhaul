@@ -1,3 +1,3 @@
-# Template Mod
+# Editor UI Overhaul
 
-Edit about.md to change this
+it overhauls the ui in the edior :thumbs-up:

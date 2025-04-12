@@ -5,8 +5,10 @@
 /**
  * !KNOWN QUIRKS ATM:
  * ui only looks normal when the screen size is 1360x768 or any multiple
+ * has not been tested on windows yet, it should be fine :clueless:
  * its probably terrible on mobile
  * and not compatible with most editor mods probably
+ * OH YEAH AND i think it requires nodeids, but my stupid mac just throws fit when i try and add a requirement
  * 
  * TODOS:
  * figure out how to structure the code properly LMAO
@@ -20,6 +22,7 @@
  * add level name on top bar
  * remove edit group, special, and object buttons
  * reformat delete mode buttons to sidebar
+ * overhaul editor pause menu also
  * add inspector input types:
  *      dropdown
  *      gallery (ex. startpos gamemode/speed)
