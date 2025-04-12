@@ -4,6 +4,7 @@
 
 /**
  * !KNOWN QUIRKS ATM:
+ * alpha trigger is the only trigger that has an inspector panel rn LMAOOOOO
  * ui only looks normal when the screen size is 1360x768 or any multiple
  * has not been tested on windows yet, it should be fine :clueless:
  * its probably terrible on mobile
