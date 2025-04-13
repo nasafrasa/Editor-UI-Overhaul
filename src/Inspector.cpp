@@ -36,6 +36,22 @@ class InspectorInput : public CCLayer {
         }
     }
 
+    void onSlider(CCObject* sender) {
+        auto slider = static_cast<Slider*>(sender);
+        auto arr = static_cast<CCArray*>(slider->getUserObject());
+
+        // auto obj = static_cast<EffectGameObject*>(arr->objectAtIndex(0));
+        // auto property = static_cast<CCString*>(arr->objectAtIndex(1))->m_sString;
+
+        // std::string value = std::to_string(slider->getValue());
+
+        // if (property == "Opacity") {
+        //     if (value.find_first_of("1234567890") != std::string::npos) {
+        //         if (std::stof(value) <= 1) obj->m_opacity = std::stof(value);
+        //     }
+        // }
+    }
+
     void onToggleChange(CCObject* sender) {
         auto spr = static_cast<CCMenuItemSpriteExtra*>(sender);
         auto array = static_cast<CCArray*>(spr->getUserObject());
@@ -116,6 +132,32 @@ CCMenu* createCheckboxField(EffectGameObject* obj, std::string property) {
     return menu;
 }
 
+CCMenu* createSliderField(EffectGameObject* obj, std::string property) {
+    auto slider = Slider::create(
+        ui,
+        menu_selector(InspectorInput::onSlider),
+        2
+    );
+    
+    if (property == "Opacity") {
+        slider->setValue(obj->m_opacity);
+    }
+    
+    slider->setAnchorPoint({0, 0});
+    slider->setPosition({300, 100});
+    
+    auto arr = CCArray::create();
+    arr->addObject(obj);
+    arr->addObject(CCString::create(property));
+    slider->setUserObject(arr);
+
+    auto menu = CCMenu::create();
+    menu->addChild(slider);
+    menu->setPosition(ccp(-232, -136));
+    menu->setScale(0.325);
+    return menu;
+}
+
 CCMenu* createToggleField(EffectGameObject* obj, std::string property) {
     auto spr = ButtonSprite::create("joe");    
 
@@ -180,6 +222,8 @@ void createInspector(GameObject* p0, int tab) {
     for (const auto& property : propertyNames) {
         CCMenu* propertyField = nullptr;
         auto labelText = property;
+        auto wrapper = CCNode::create();
+        CCNode* bonusWrapper = nullptr;
 
         // Check for checkboxes
         std::vector<std::string> checkboxProperties = {
@@ -241,6 +285,8 @@ void createInspector(GameObject* p0, int tab) {
                 0,
                 "1234567890."
             );
+            bonusWrapper = CCNode::create();
+            bonusWrapper->addChild(createSliderField(obj, property));
         }
 
         auto label = CCLabelBMFont::create(labelText.c_str(), "bigFont.fnt");
@@ -248,27 +294,12 @@ void createInspector(GameObject* p0, int tab) {
         label->setPosition(ccp(1.5, 1.5));
         label->setScale(0.2);
 
-        auto wrapper = CCNode::create();
         wrapper->addChild(label);
         if (propertyField) wrapper->addChild(propertyField);
-        wrapper->setContentSize(label->getContentSize());
         
         listItems->addObject(wrapper);
+        if (bonusWrapper) listItems->addObject(bonusWrapper);
     }
-
-    listItems = CCArray::create();
-
-    auto label = CCLabelBMFont::create("thinger", "bigFont.fnt");
-    label->setAnchorPoint({ 0.f, 0.f });
-    label->setPosition(ccp(1.5, 1.5));
-    label->setScale(0.2);
-
-    auto wrapper = CCNode::create();
-    wrapper->addChild(label);
-    wrapper->setContentSize(label->getContentSize());
-        
-    listItems->addObject(wrapper);
-    listItems->addObject(wrapper);
 
     // Make Inspector List
     if (ui->getChildByID("euio-inspector-list")) ui->getChildByID("euio-inspector-list")->removeMeAndCleanup();
@@ -330,6 +361,9 @@ class $modify(InspectorPanel, EditorUI) {
     bool init(LevelEditorLayer* p0) {
 		if (!EditorUI::init(p0)) return false;
         ui = this;
+
+        
+
         return true;
     }
 };
