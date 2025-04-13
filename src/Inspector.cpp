@@ -24,16 +24,44 @@ bool containsString(const std::vector<std::string>& arr, const std::string& targ
 
 class InspectorInput : public CCLayer {
     public:
-    void onToggleChange(CCObject* sender) {
+    void onCheckboxChange(CCObject* sender) {
         auto toggler = static_cast<CCMenuItemToggler*>(sender);
         auto array = static_cast<CCArray*>(toggler->getUserObject());
         
         auto obj = static_cast<EffectGameObject*>(array->objectAtIndex(0));
-        auto property = static_cast<CCString*>(array->objectAtIndex(1));
+        auto property = static_cast<CCString*>(array->objectAtIndex(1))->m_sString;
 
-        if (property->m_sString == "Multi Trigger") {
+        if (property == "Multi Trigger") {
             obj->m_isMultiTriggered = !obj->m_isMultiTriggered;
-            createInspector(obj, 1);
+        }
+    }
+
+    void onToggleChange(CCObject* sender) {
+        auto spr = static_cast<CCMenuItemSpriteExtra*>(sender);
+        auto array = static_cast<CCArray*>(spr->getUserObject());
+        
+        auto obj = static_cast<EffectGameObject*>(array->objectAtIndex(0));
+        auto property = static_cast<CCString*>(array->objectAtIndex(1))->m_sString;
+
+        if (property == "Trigger Type") {
+            static int state = 0;
+            state = (state + 1) % 3;
+
+            const char* labels[] = { "Spawn", "Touch", "Time" };
+            bool spawn = (state == 0);
+            bool touch = (state == 1);
+
+            spr->setSprite(ButtonSprite::create(labels[state]));
+            spr->updateSprite();
+
+            obj->m_isSpawnTriggered = spawn;
+            obj->m_isTouchTriggered = touch;
+            
+            if (spawn || touch) {
+                createInspector(obj, 1);
+            } else {
+                createInspector(obj, 0);
+            }
         }
     }
 };
@@ -68,7 +96,7 @@ CCMenu* createNumberField(
 CCMenu* createCheckboxField(EffectGameObject* obj, std::string property) {
     auto toggler = CCMenuItemToggler::createWithStandardSprites(
         ui, 
-        menu_selector(InspectorInput::onToggleChange),
+        menu_selector(InspectorInput::onCheckboxChange),
         1
     );
     
@@ -88,6 +116,36 @@ CCMenu* createCheckboxField(EffectGameObject* obj, std::string property) {
     return menu;
 }
 
+CCMenu* createToggleField(EffectGameObject* obj, std::string property) {
+    auto spr = ButtonSprite::create("joe");    
+
+    if (property == "Trigger Type") {
+        if (obj->m_isSpawnTriggered) {
+            spr = ButtonSprite::create("Spawn");
+        } else if (obj->m_isTouchTriggered) {
+            spr = ButtonSprite::create("Touch");
+        } else {
+            spr = ButtonSprite::create("Time");
+        }
+    }
+
+    auto btn = CCMenuItemSpriteExtra::create(
+        spr, ui, menu_selector(InspectorInput::onToggleChange)
+    );
+    btn->setAnchorPoint({ 1.f, 0.5f });
+
+    auto arr = CCArray::create();
+    arr->addObject(obj);
+    arr->addObject(CCString::create(property));
+    btn->setUserObject(arr);
+
+    auto menu = CCMenu::create();
+    menu->addChild(btn);
+    menu->setScale(0.275);
+    menu->setPosition({-97.5f, -111.5f});
+    return menu;
+}
+
 void createInspector(GameObject* p0, int tab) {
     auto obj = static_cast<EffectGameObject*>(p0);
     auto winSize = CCDirector::get()->getWinSize();
@@ -96,14 +154,14 @@ void createInspector(GameObject* p0, int tab) {
     std::vector<std::string> propertyNames = {" "};
     auto inspectorTitleText = "Joe H. Bruh";
 
-    // For dynamic menus :(
-    if (obj->m_isMultiTriggered) {
-        tab = 1;
-    }
-
     // Get specific properties for the object and tab
     for (const auto& object : objectInsProp) {
         if (obj->m_objectID == object.id) {
+            // For dynamic menus
+            if ( (object.id == 1007) && (obj->m_isSpawnTriggered || obj->m_isTouchTriggered) ) {
+                tab = 1;
+            }
+
             propertyNames = object.inspectorPanelProperties[tab];
             inspectorTitleText = object.name.c_str();
         } else {
@@ -130,6 +188,19 @@ void createInspector(GameObject* p0, int tab) {
         ) != checkboxProperties.end();
         if (isCheckbox) {
             propertyField = createCheckboxField(obj, property);
+        }
+
+        // Check for toggles
+        std::vector<std::string> toggleProperties = {
+            "Trigger Type"
+        };
+        bool isToggle = std::find(
+            toggleProperties.begin(),
+            toggleProperties.end(),
+            property
+        ) != toggleProperties.end();
+        if (isToggle) {
+            propertyField = createToggleField(obj, property);
         }
 
         // Check for number inputs
