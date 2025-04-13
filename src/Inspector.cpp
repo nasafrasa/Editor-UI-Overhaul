@@ -116,7 +116,7 @@ NumberFieldPair createNumberField(
 
     auto menu = CCMenu::create();
     menu->addChild(field);
-    menu->setPosition(ccp(0, 0));
+    menu->setPosition(ccp(-0.5, 0.25));
     return { menu, field };
 }
 
@@ -306,13 +306,13 @@ void createInspector(GameObject* p0, int tab) {
             auto propertyFieldMenu = createNumberField(
                 [obj, sliderPtr](const std::string& input) {
                     if (input.find_first_of("1234567890") != std::string::npos) {
-                            float val = std::stof(input);
-                            if (val <= 1.0f) {
-                                obj->m_opacity = val;
-                                if (*sliderPtr) {
-                                    (*sliderPtr)->setValue(val);
-                                }
+                        float val = std::stof(input);
+                        if (val <= 1.0f) {
+                            obj->m_opacity = val;
+                            if (*sliderPtr) {
+                                (*sliderPtr)->setValue(val);
                             }
+                        }
                     }
                 },
                 floatToFormattedString(obj->m_opacity, 2),
