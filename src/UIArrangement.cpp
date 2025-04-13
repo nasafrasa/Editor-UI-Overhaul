@@ -72,8 +72,8 @@ class $modify(ArrangeUI, EditorUI) {
         }
     }
 
-    bool init(LevelEditorLayer* lel) {
-		if (!EditorUI::init(lel)) return false;
+    bool init(LevelEditorLayer* p0) {
+		if (!EditorUI::init(p0)) return false;
 
         this->m_toolbarHeight = 0;
 

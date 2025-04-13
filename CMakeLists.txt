@@ -12,8 +12,9 @@ project(EditorUIOverhaul VERSION 1.0.0)
 
 # Set up the mod binary
 add_library(${PROJECT_NAME} SHARED
-    src/main.cpp
     src/UIArrangement.cpp
+    src/ObjectProperties.cpp
+    src/Inspector.cpp
     # Add any extra C++ source files here
 )
 

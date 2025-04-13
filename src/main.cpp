@@ -1,6 +1,5 @@
 #include <Geode/modify/LevelEditorLayer.hpp>
 #include <Geode/modify/EditorUI.hpp>
-#include <Geode/modify/EditLevelLayer.hpp>
 
 /**
  * !KNOWN QUIRKS ATM:
