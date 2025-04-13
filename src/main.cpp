@@ -1,11 +1,7 @@
-#include <Geode/modify/LevelEditorLayer.hpp>
-#include <Geode/modify/EditorUI.hpp>
-
 // I'll probably only use this file as a notepad and testing ground for new features
 
 /**
  * !KNOWN QUIRKS ATM:
- * alpha trigger is the only trigger that has an inspector panel rn LMAOOOOO
  * ui only looks normal when the screen size is 1360x768 or any multiple
  * has not been tested on windows yet, it should be fine :clueless:
  * its probably terrible on mobile
@@ -39,5 +35,3 @@
  *      "extended" numbers (ex. for when the input can be smth like P1, BG, etc.) (they'll just have a lil + beside them)
  *      misc (like advfollow presets, keyframe button doohickeys, equation thing in item edit, layer range in shader)
  */
-
-using namespace geode::prelude;

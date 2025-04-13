@@ -39,25 +39,6 @@ class $modify(ArrangeUI, EditorUI) {
         GameObject* selectedObjectCache;
     };
 
-    /*void selectObject(GameObject* p0, bool p1) {
-        EditorUI::selectObject(p0, p1);
-        static_cast<Editor*>(LevelEditorLayer::get())->selectObject(p0);
-    }
-    void selectObjects(CCArray* p0, bool p1) {
-        EditorUI::selectObjects(p0, p1);
-        static_cast<Editor*>(LevelEditorLayer::get())->deselectObject();
-    }
-    
-    void deselectObject(GameObject* p0) {
-        EditorUI::deselectObject(p0);
-        static_cast<Editor*>(LevelEditorLayer::get())->deselectObject();
-    }
-
-    void deselectAll() {
-        EditorUI::deselectAll();
-        static_cast<Editor*>(LevelEditorLayer::get())->deselectObject();
-    }*/
-
     void onPlaytest(cocos2d::CCObject *p0) {
         EditorUI::onPlaytest(p0);
         for (const auto& node : newUINodes) {
