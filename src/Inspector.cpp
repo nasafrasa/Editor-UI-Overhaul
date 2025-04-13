@@ -146,6 +146,13 @@ CCMenu* createToggleField(EffectGameObject* obj, std::string property) {
     return menu;
 }
 
+int getTab(EffectGameObject* obj) {
+    if ( (obj->m_isSpawnTriggered || obj->m_isTouchTriggered) ) {
+        return 1;
+    }
+    return 0;
+}
+
 void createInspector(GameObject* p0, int tab) {
     auto obj = static_cast<EffectGameObject*>(p0);
     auto winSize = CCDirector::get()->getWinSize();
@@ -157,13 +164,10 @@ void createInspector(GameObject* p0, int tab) {
     // Get specific properties for the object and tab
     for (const auto& object : objectInsProp) {
         if (obj->m_objectID == object.id) {
-            // For dynamic menus
-            if ( (object.id == 1007) && (obj->m_isSpawnTriggered || obj->m_isTouchTriggered) ) {
-                tab = 1;
-            }
-
+            tab = getTab(obj);
             propertyNames = object.inspectorPanelProperties[tab];
             inspectorTitleText = object.name.c_str();
+            break;
         } else {
             propertyNames = {" "};
             inspectorTitleText = "Work In Progress";
@@ -252,32 +256,44 @@ void createInspector(GameObject* p0, int tab) {
         listItems->addObject(wrapper);
     }
 
-    
+    listItems = CCArray::create();
+
+    auto label = CCLabelBMFont::create("thinger", "bigFont.fnt");
+    label->setAnchorPoint({ 0.f, 0.f });
+    label->setPosition(ccp(1.5, 1.5));
+    label->setScale(0.2);
+
+    auto wrapper = CCNode::create();
+    wrapper->addChild(label);
+    wrapper->setContentSize(label->getContentSize());
+        
+    listItems->addObject(wrapper);
+    listItems->addObject(wrapper);
 
     // Make Inspector List
-    if (ui->getChildByID("inspector-list")) ui->getChildByID("inspector-list")->removeMeAndCleanup();
+    if (ui->getChildByID("euio-inspector-list")) ui->getChildByID("euio-inspector-list")->removeMeAndCleanup();
     auto inspectorList = ListView::create(
         listItems,
-        9.0f,
-        109.0f,
-        194.0f
+        9,
+        109,
+        194
     );
-    inspectorList->setPosition({ 451.5, 103.5});
-    inspectorList->setScale(1);
+    inspectorList->setPosition(ccp(451.5, 103.5));
     inspectorList->setZOrder(1);
     inspectorList->setTouchEnabled(true);
     inspectorList->setTouchPriority(-1);
     inspectorList->setCellOpacity(50);
-    inspectorList->setPrimaryCellColor(cocos2d::ccc3(0, 0, 10));
-    inspectorList->setSecondaryCellColor(cocos2d::ccc3(50, 50, 60));
-    inspectorList->setCellBorderColor(cocos2d::ccc4(0, 0, 0, 0));
-    inspectorList->setID("inspector-list");
+    inspectorList->setPrimaryCellColor(ccc3(0, 0, 10));
+    inspectorList->setSecondaryCellColor(ccc3(50, 50, 60));
+    inspectorList->setCellBorderColor(ccc4(0, 0, 0, 0));
+    inspectorList->updateTransform();
+    inspectorList->setID("euio-inspector-list");
     ui->addChild(inspectorList);
 
     // Make Inspector Title
-    if (ui->getChildByID("inspector-title")) ui->getChildByID("inspector-title")->removeFromParent();
+    if (ui->getChildByID("euio-inspector-title")) ui->getChildByID("euio-inspector-title")->removeFromParent();
     auto inspectorTitle = CCLabelBMFont::create(inspectorTitleText, "goldFont.fnt");
-    inspectorTitle->setID("inspector-title");
+    inspectorTitle->setID("euio-inspector-title");
     inspectorTitle->setPosition(winSize / 2);
     inspectorTitle->setScale(0.425);
     inspectorTitle->setPosition(ccp(453, 306));
@@ -286,8 +302,8 @@ void createInspector(GameObject* p0, int tab) {
 }
 
 void destroyInspector() {
-    if (ui->getChildByID("inspector-list")) ui->getChildByID("inspector-list")->removeFromParent();
-    if (ui->getChildByID("inspector-title")) ui->getChildByID("inspector-title")->removeFromParent();
+    if (ui->getChildByID("euio-inspector-list")) ui->getChildByID("euio-inspector-list")->removeFromParent();
+    if (ui->getChildByID("euio-inspector-title")) ui->getChildByID("euio-inspector-title")->removeFromParent();
 }
 
 class $modify(InspectorPanel, EditorUI) {

@@ -196,18 +196,14 @@ class $modify(ArrangeUI, EditorUI) {
         auto spacerLineRight = this->getChildByID("spacer-line-right");
         spacerLineRight->removeMeAndCleanup();
 
-        auto hsvButton = this->getChildByID("hsv-button");
-        //hsvButton->setParent(this->getChildByID("EditorUI"));
-        //hsvButton->setScale(0);
-        auto editObject = this->getChildByID("edit-object-button");
-        //editObject->setParent(this->getChildByID("EditorUI"));
-        //editObject->setPositionX(10);
-        auto editGroup = this->getChildByID("edit-group-button");
-        //editGroup->setParent(this->getChildByID("EditorUI"));
-        //editGroup->setPositionX(10);
-        auto editSpecial = this->getChildByID("edit-special-button");
-        //editSpecial->setParent(this->getChildByID("EditorUI"));
-        //editSpecial->setPositionX(10);
+        auto hsvButton = this->getChildByID("editor-buttons-menu")->getChildByType(11);
+        auto editObject = this->getChildByID("editor-buttons-menu")->getChildByType(1);
+        auto editGroup = this->getChildByID("editor-buttons-menu")->getChildByType(5);
+        auto editSpecial = this->getChildByID("editor-buttons-menu")->getChildByType(9);
+        //hsvButton->removeFromParent();
+        //editObject->removeFromParent();
+        //editGroup->removeFromParent();
+        //editSpecial->removeFromParent();
 
         // object-info-label
         auto objectInfoLabel = this->getChildByID("object-info-label");
@@ -259,7 +255,7 @@ class $modify(ArrangeUI, EditorUI) {
         // editor-buttons-menu
         auto editorButtonsMenu = typeinfo_cast<CCMenu*>(this->getChildByID("editor-buttons-menu"));
         editorButtonsMenu->setScale(0.75);
-        editorButtonsMenu->setPosition(CCPoint(509, 65.5));
+        editorButtonsMenu->setPosition(CCPoint(485, 65.5));
         editorButtonsMenu->setContentSize(CCSize(210, 80));
         editorButtonsMenu->updateLayout(true);
         editorButtonsMenu->setTouchPriority(-101);
