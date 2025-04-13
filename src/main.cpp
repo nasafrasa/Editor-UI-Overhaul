@@ -4,6 +4,7 @@
 
 /**
  * !KNOWN QUIRKS ATM:
+ * cant select anything below certain point
  * alpha trigger is the only trigger that has an inspector panel rn LMAOOOOO
  * ui only looks normal when the screen size is 1360x768 or any multiple
  * has not been tested on windows yet, it should be fine :clueless:
@@ -43,8 +44,15 @@ using namespace geode::prelude;
 
 EditorUI* newEditorUI;
 auto levelName = "nope";
-std::vector<std::tuple<int, std::string, std::vector<int>>> objectInsProp = {
-    {1007, "Alpha", {1, 2, 3, 0, 4, 5}}
+std::vector<std::tuple<int, std::string, std::vector<std::vector<int>>>> objectInsProp = {
+    {
+        1007,
+        "Alpha", 
+        {
+            {1, 2, 3, 0, 4},
+            {1, 2, 3, 0, 4, 5}
+        }
+    }
 };
 
 std::string floatToFormattedString(float num, int round) {
@@ -272,35 +280,8 @@ void createInspectorElements(CCArray* list, EffectGameObject* obj, std::vector<i
     }
 }
 
-class SwallowNode : public CCNode, public CCTargetedTouchDelegate {
-public:
-    static SwallowNode* create() {
-        auto ret = new SwallowNode();
-        if (ret && ret->init()) {
-            ret->autorelease();
-            return ret;
-        }
-        CC_SAFE_DELETE(ret);
-        return nullptr;
-    }
-
-    bool init() override {
-        CCDirector::sharedDirector()->getTouchDispatcher()->addTargetedDelegate(this, -100, true);
-        return true;
-    }
-
-    // Touch handling (swallow touch events)
-    bool ccTouchBegan(CCTouch* touch, CCEvent* event) override {
-        auto location = touch->getLocation();
-        if (this->boundingBox().containsPoint(location)) {
-            return true; // Eat the touch
-        }
-        return false;
-    }
-};
-
 class $modify(Editor, LevelEditorLayer) {
-    void selectObject(GameObject* object) {
+    void selectObject(GameObject* object, int pageID = 0) {
         auto obj = static_cast<EffectGameObject*>(object);
         auto winSize = CCDirector::get()->getWinSize();
 
@@ -315,7 +296,8 @@ class $modify(Editor, LevelEditorLayer) {
             int targetObjectID = std::get<0>(objectInsProp[i]);
             if (obj->m_objectID == targetObjectID) {
                 std::string name = std::get<1>(objectInsProp[i]);
-                std::vector<int> values = std::get<2>(objectInsProp[i]);
+                std::vector< std::vector<int>> valueValues = std::get<2>(objectInsProp[i]);
+                std::vector<int> values = valueValues[pageID];
                 
                 propertyIDs = values;
                 objectName = name.c_str();
@@ -339,13 +321,13 @@ class $modify(Editor, LevelEditorLayer) {
 
 
 
-        if (this->getChildByID("testing-label")) {
-            this->getChildByID("testing-label")->removeMeAndCleanup();
+        if (newEditorUI->getChildByID("testing-label")) {
+            newEditorUI->getChildByID("testing-label")->removeMeAndCleanup();
         }
         auto labelnew = CCLabelBMFont::create(std::to_string(obj->m_targetGroupID).c_str(), "bigFont.fnt");
         labelnew->setID("testing-label");
         labelnew->setPosition(winSize / 2);
-		//this->addChild(labelnew);
+		//newEditorUI->addChild(labelnew);
 
     }
 
@@ -353,281 +335,4 @@ class $modify(Editor, LevelEditorLayer) {
         if (newEditorUI->getChildByID("inspector-list")) newEditorUI->getChildByID("inspector-list")->removeMeAndCleanup();
         if (newEditorUI->getChildByID("inspector-title")) newEditorUI->getChildByID("inspector-title")->removeMeAndCleanup();
     }
-};
-
-class $modify(EditUI, EditorUI) {
-    struct Fields {
-        GameObject* selectedObjectCache; // ensure it selects the right object
-    };
-
-    void selectObject(GameObject* p0, bool p1) {
-        EditorUI::selectObject(p0, p1);
-        static_cast<Editor*>(LevelEditorLayer::get())->selectObject(p0);
-    }
-    void selectObjects(CCArray* p0, bool p1) {
-        EditorUI::selectObjects(p0, p1);
-        static_cast<Editor*>(LevelEditorLayer::get())->deselectObject();
-    }
-    
-    void deselectObject(GameObject* p0) {
-        EditorUI::deselectObject(p0);
-        static_cast<Editor*>(LevelEditorLayer::get())->deselectObject();
-    }
-
-    void deselectAll() {
-        EditorUI::deselectAll();
-        static_cast<Editor*>(LevelEditorLayer::get())->deselectObject();
-    }
-
-    bool init(LevelEditorLayer* lel) {
-		if (!EditorUI::init(lel))
-			return false;
-
-        newEditorUI = this;
-
-        NodeIDs::provideFor(newEditorUI);
-        auto menu = newEditorUI->getChildByID("playback-menu");
-        auto winSize = CCDirector::get()->getWinSize();
-		// auto spr = ButtonSprite::create("hey.......");
-        // auto btn = CCMenuItemSpriteExtra::create(
-        //     spr, newEditorUI, menu_selector(EditUI::coolthing)
-        // );
-
-
-        // things
-        auto thing1 = CCScale9Sprite::create("translucent_panel.png"_spr);
-        thing1->setCapInsets(CCRectMake(10, 10, 20, 20));
-        thing1->setContentSize(CCSizeMake(108, 101));
-        thing1->setPosition(ccp(76, 201));
-        thing1->setScale(0.5);
-        newEditorUI->addChild(thing1);
-        auto thing2 = CCScale9Sprite::create("translucent_panel.png"_spr);
-        thing2->setCapInsets(CCRectMake(10, 10, 20, 20));
-        thing2->setContentSize(CCSizeMake(108, 101));
-        thing2->setPosition(ccp(76, 258));
-        thing2->setScale(0.5);
-        newEditorUI->addChild(thing2);
-        auto thing3 = CCScale9Sprite::create("translucent_panel.png"_spr);
-        thing3->setCapInsets(CCRectMake(10, 10, 20, 20));
-        thing3->setContentSize(CCSizeMake(108, 150));
-        thing3->setPosition(ccp(76, 130));
-        thing3->setScale(0.5);
-        newEditorUI->addChild(thing3);
-        auto thing4 = CCScale9Sprite::create("translucent_panel.png"_spr);
-        thing4->setCapInsets(CCRectMake(10, 10, 20, 20));
-        thing4->setContentSize(CCSizeMake(108, 150));
-        thing4->setPosition(ccp(39, 42));
-        thing4->setScale(0.5);
-        newEditorUI->addChild(thing4);
-        auto thing5 = CCScale9Sprite::create("translucent_panel.png"_spr);
-        thing5->setCapInsets(CCRectMake(10, 10, 20, 20));
-        thing5->setContentSize(CCSizeMake(214, 150));
-        thing5->setPosition(ccp(506, 67));
-        thing5->setScale(0.5);
-        newEditorUI->addChild(thing5);
-        auto thing6 = CCScale9Sprite::create("translucent_panel.png"_spr);
-        thing6->setCapInsets(CCRectMake(10, 10, 20, 20));
-        thing6->setContentSize(CCSizeMake(271, 120));
-        thing6->setPosition(ccp(294, 0));
-        thing6->setScale(0.5);
-        newEditorUI->addChild(thing6);
-
-
-
-        // inspector-panel
-        auto inspectorPanel = CCScale9Sprite::create("GJ_square01.png");
-        inspectorPanel->setCapInsets(CCRectMake(10, 10, 20, 20));
-        inspectorPanel->setContentSize(CCSizeMake(231, 435));
-        inspectorPanel->setPosition(ccp(506, 207));
-        inspectorPanel->setScale(0.5);
-        newEditorUI->addChild(inspectorPanel);
-
-        // toolbox-panel
-        auto toolboxPanel = CCScale9Sprite::create("GJ_square02.png");
-        toolboxPanel->setCapInsets(CCRectMake(10, 10, 20, 20));
-        toolboxPanel->setContentSize(CCSizeMake(144, 503));
-        toolboxPanel->setPosition(ccp(39, 190));
-        toolboxPanel->setScale(0.5);
-        newEditorUI->addChild(toolboxPanel);
-
-        // header-panel
-        auto headerPanel = CCScale9Sprite::create("GJ_square02.png");
-        headerPanel->setCapInsets(CCRectMake(10, 10, 20, 20));
-        headerPanel->setContentSize(CCSizeMake(730, 57));
-        headerPanel->setPosition(ccp(261, 301));
-        headerPanel->setScale(0.5);
-        newEditorUI->addChild(headerPanel);
-
-        // layer-panel
-        auto layerPanel = CCScale9Sprite::create("GJ_square02.png");
-        layerPanel->setCapInsets(CCRectMake(10, 10, 20, 20));
-        layerPanel->setContentSize(CCSizeMake(231, 57));
-        layerPanel->setPosition(ccp(506, 20));
-        layerPanel->setScale(0.5);
-        newEditorUI->addChild(layerPanel);
-
-        // touch priority garbo
-        auto blocker = SwallowNode::create();
-        blocker->setContentSize(CCSize(231, 435));
-        blocker->setPosition(ccp(449, -49));
-        newEditorUI->addChild(blocker, inspectorPanel->getZOrder() - 1);
-        auto blocker2 = SwallowNode::create();
-        blocker2->setContentSize(CCSize(231, 435));
-        blocker2->setPosition(ccp(-156, -49));
-        newEditorUI->addChild(blocker2, inspectorPanel->getZOrder() - 1);
-        auto blocker3 = SwallowNode::create();
-        blocker3->setContentSize(CCSize(231, 435));
-        blocker3->setPosition(ccp(43, 518));
-        blocker3->setRotation(90);
-        newEditorUI->addChild(blocker3, inspectorPanel->getZOrder() - 1);
-
-        // testing
-        CCNode * tabBars[15] = {
-            newEditorUI->getChildByID("block-tab-bar"),
-            newEditorUI->getChildByID("outline-tab-bar"),
-            newEditorUI->getChildByID("slope-tab-bar"),
-            newEditorUI->getChildByID("hazard-tab-bar"),
-            newEditorUI->getChildByID("3d-tab-bar"),
-            newEditorUI->getChildByID("portal-tab-bar"),
-            newEditorUI->getChildByID("monster-tab-bar"),
-            newEditorUI->getChildByID("pixel-tab-bar"),
-            newEditorUI->getChildByID("collectible-tab-bar"),
-            newEditorUI->getChildByID("icon-tab-bar"),
-            newEditorUI->getChildByID("deco-tab-bar"),
-            newEditorUI->getChildByID("sawblade-tab-bar"),
-            newEditorUI->getChildByID("trigger-tab-bar"),
-            newEditorUI->getChildByID("custom-tab-bar"),
-            newEditorUI->getChildByID("edit-tab-bar")
-        };
-
-        for (CCNode * tabBar : tabBars) {
-            auto thing1 = tabBar->getChildByType(0)->getChildByType(0)->getChildren();
-
-            if (tabBar->getChildByType(1)) {
-                auto arrow1 = tabBar->getChildByType(1)->getChildByType(0);
-                auto arrow2 = tabBar->getChildByType(1)->getChildByType(1);
-                auto aS1 = arrow1->getChildByType(0);
-                auto aS2 = arrow2->getChildByType(0);
-
-                aS1->setScale(0.5);
-                aS2->setScale(0.5);
-                arrow1->setPosition(ccp(-265, 143));
-                arrow2->setPosition(ccp(-224, 143));
-            }
-
-            if (tabBar->getChildByType(0)->getChildByType(1)) {
-                auto dots = tabBar->getChildByType(0)->getChildByType(1);
-                dots->setRotation(90);
-                dots->setScale(0.4);
-                dots->setPosition(ccp(6, 292));
-            }
-
-            CCObject* obj;
-            CCARRAY_FOREACH(thing1, obj) {
-                auto thing2 = static_cast<CCNode*>(obj)->getChildByType(0);
-                auto layT = RowLayout::create();
-
-                layT->setGrowCrossAxis(true);
-                layT->setAxis(Axis::Row);
-                layT->setAxisAlignment(AxisAlignment::Start);
-
-                thing2->setContentSize(CCSize(130, 535));
-                thing2->setLayout(layT);
-                thing2->setPositionY(277);
-                thing2->setScale(0.450);
-                thing2->setPosition(CCPoint(38.5, 182));
-            }
-        }
-
-        // background-sprite | spacer-line-left | spacer-line-right
-        auto backgroundSprite = newEditorUI->getChildByID("background-sprite");
-        backgroundSprite->removeMeAndCleanup();
-        auto spacerLineLeft = newEditorUI->getChildByID("spacer-line-left");
-        spacerLineLeft->removeMeAndCleanup();
-        auto spacerLineRight = newEditorUI->getChildByID("spacer-line-right");
-        spacerLineRight->removeMeAndCleanup();
-
-        auto hsvButton = newEditorUI->getChildByID("hsv-button");
-        //hsvButton->setParent(newEditorUI->getChildByID("EditorUI"));
-        //hsvButton->setScale(0);
-        auto editObject = newEditorUI->getChildByID("edit-object-button");
-        //editObject->setParent(newEditorUI->getChildByID("EditorUI"));
-        //editObject->setPositionX(10);
-        auto editGroup = newEditorUI->getChildByID("edit-group-button");
-        //editGroup->setParent(newEditorUI->getChildByID("EditorUI"));
-        //editGroup->setPositionX(10);
-        auto editSpecial = newEditorUI->getChildByID("edit-special-button");
-        //editSpecial->setParent(newEditorUI->getChildByID("EditorUI"));
-        //editSpecial->setPositionX(10);
-
-        // object-info-label
-        auto objectInfoLabel = newEditorUI->getChildByID("object-info-label");
-        objectInfoLabel->setScale(0.35);
-        objectInfoLabel->setPosition(CCPoint(108, 270));
-        // position-slider
-        auto positionSlider = newEditorUI->getChildByID("position-slider");
-        positionSlider->setScale(0.575);
-        positionSlider->setPosition(CCPoint(172.5, -53));
-        // toolbar-categories-menu
-        auto toolbarCatergoriesMenu = newEditorUI->getChildByID("toolbar-categories-menu");
-        toolbarCatergoriesMenu->setScale(0.6);
-        toolbarCatergoriesMenu->setPosition(CCPoint(39, 33));
-        // toolbar-toggles-menu
-        auto toolbarTogglesMenu = newEditorUI->getChildByID("toolbar-toggles-menu");
-        toolbarTogglesMenu->setScale(0.5);
-        toolbarTogglesMenu->setPosition(CCPoint(422, 260));
-
-        // undo-menu
-        auto undoMenu = newEditorUI->getChildByID("undo-menu");
-        undoMenu->setScale(0.525);
-        undoMenu->setPosition(CCPoint(89, 130));
-        undoMenu->setContentSize(CCSize(50, 137));
-        auto undoLayout = RowLayout::create();
-        undoLayout->setGrowCrossAxis(true);
-        undoLayout->setCrossAxisAlignment(AxisAlignment::Start);
-        undoLayout->setGap(5);
-        undoMenu->setLayout(undoLayout);
-        // playback-menu
-        auto playbackMenu = typeinfo_cast<CCMenu*>(newEditorUI->getChildByID("playback-menu"));
-        playbackMenu->setScale(0.525);
-        playbackMenu->setPosition(CCPoint(108, 301));
-        playbackMenu->setTouchPriority(-129);
-        // playtest-menu
-        auto playtestMenu = newEditorUI->getChildByID("playtest-menu");
-        playtestMenu->setScale(0.525);
-        playtestMenu->setPosition(CCPoint(129, 301));
-        // zoom-menu
-        auto zoomMenu = newEditorUI->getChildByID("zoom-menu");
-        zoomMenu->setScale(0.675);
-        zoomMenu->setPosition(CCPoint(89, 255));
-        // link-menu
-        auto linkMenu = newEditorUI->getChildByID("link-menu");
-        linkMenu->setScale(0.675);
-        linkMenu->setPosition(CCPoint(89, 197.5));
-        // settings-menu
-        auto settingsMenu = newEditorUI->getChildByID("settings-menu");
-        settingsMenu->setScale(0.525);
-        settingsMenu->setPosition(CCPoint(402, 301));
-        // editor-buttons-menu
-        auto editorButtonsMenu = typeinfo_cast<CCMenu*>(newEditorUI->getChildByID("editor-buttons-menu"));
-        editorButtonsMenu->setScale(0.75);
-        editorButtonsMenu->setPosition(CCPoint(509, 65.5));
-        editorButtonsMenu->setContentSize(CCSize(210, 80));
-        editorButtonsMenu->updateLayout(true);
-        editorButtonsMenu->setTouchPriority(-101);
-        // layer-menu
-        auto layerMenu = newEditorUI->getChildByID("layer-menu");
-        layerMenu->setScale(0.725);
-        layerMenu->setPosition(CCPoint(517, 20));
-        // build-tabs-menu
-        auto buildTabsMenu = newEditorUI->getChildByID("build-tabs-menu");
-        buildTabsMenu->setScale(0.525);
-        buildTabsMenu->setPosition(CCPoint(257.5, 292));
-
-        //auto another = CCLabelBMFont::create(levelName, "bigFont.fnt");
-		//another->setPosition({ winSize.width / 2, winSize.height / 2});
-		//newEditorUI->addChild(another);
-
-		return true;
-	}
 };
