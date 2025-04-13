@@ -34,7 +34,7 @@ public:
     }
 };
 
-class $modify(NewUI, EditorUI) {
+class $modify(ArrangeUI, EditorUI) {
     struct Fields {
         GameObject* selectedObjectCache;
     };
@@ -73,8 +73,9 @@ class $modify(NewUI, EditorUI) {
     }
 
     bool init(LevelEditorLayer* lel) {
-		if (!EditorUI::init(lel))
-			return false;
+		if (!EditorUI::init(lel)) return false;
+
+        this->m_toolbarHeight = 0;
 
         NodeIDs::provideFor(this);
         auto menu = this->getChildByID("playback-menu");
