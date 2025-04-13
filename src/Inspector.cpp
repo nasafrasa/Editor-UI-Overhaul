@@ -6,6 +6,10 @@
 using namespace geode::prelude;
 EditorUI* ui;
 void createInspector(GameObject* p0, int tab = 0);
+struct NumberFieldPair {
+    CCMenu* menu;
+    TextInput* field;
+};
 
 std::string floatToFormattedString(float num, int round) {
     std::stringstream ss;
@@ -37,19 +41,21 @@ class InspectorInput : public CCLayer {
     }
 
     void onSlider(CCObject* sender) {
-        auto slider = static_cast<Slider*>(sender);
+        auto thumb = static_cast<SliderThumb*>(sender);
+        auto sliderLogic = dynamic_cast<SliderTouchLogic*>(thumb->getParent());
+        auto slider = dynamic_cast<Slider*>(sliderLogic->getParent());
         auto arr = static_cast<CCArray*>(slider->getUserObject());
 
-        // auto obj = static_cast<EffectGameObject*>(arr->objectAtIndex(0));
-        // auto property = static_cast<CCString*>(arr->objectAtIndex(1))->m_sString;
+        auto obj = static_cast<EffectGameObject*>(arr->objectAtIndex(0));
+        auto property = static_cast<CCString*>(arr->objectAtIndex(1))->m_sString;
 
-        // std::string value = std::to_string(slider->getValue());
+        std::string value = std::to_string(thumb->getValue());
 
-        // if (property == "Opacity") {
-        //     if (value.find_first_of("1234567890") != std::string::npos) {
-        //         if (std::stof(value) <= 1) obj->m_opacity = std::stof(value);
-        //     }
-        // }
+        auto linkedField = static_cast<TextInput*>(arr->objectAtIndex(2));
+        if (property == "Opacity") {
+            obj->m_opacity = thumb->getValue();
+            linkedField->setString(floatToFormattedString(thumb->getValue(), 2));
+        }
     }
 
     void onToggleChange(CCObject* sender) {
@@ -87,9 +93,9 @@ class InspectorInput : public CCLayer {
     }
 };
 
-CCMenu* createNumberField(
+NumberFieldPair createNumberField(
     std::function<void (const std::string &)> callback, 
-    const std::string string, 
+    const std::string& string, 
     size_t maxCharCount = 0, 
     std::string filter = "1234567890"
 ) {
@@ -111,7 +117,7 @@ CCMenu* createNumberField(
     auto menu = CCMenu::create();
     menu->addChild(field);
     menu->setPosition(ccp(0, 0));
-    return menu;
+    return { menu, field };
 }
 
 CCMenu* createCheckboxField(EffectGameObject* obj, std::string property) {
@@ -137,19 +143,23 @@ CCMenu* createCheckboxField(EffectGameObject* obj, std::string property) {
     return menu;
 }
 
-CCMenu* createSliderField(EffectGameObject* obj, std::string property) {
+std::pair<CCMenu*, Slider*> createSliderField(
+    EffectGameObject* obj, std::string property, TextInput* linkedField
+) {
     auto slider = Slider::create(
         ui,
         menu_selector(InspectorInput::onSlider),
         1.5
     );
     
+    slider->setValue(0);
     if (property == "Opacity") {
         slider->setValue(obj->m_opacity);
     }
     
     slider->setAnchorPoint({0, 0});
     slider->setPosition({300, 100});
+    slider->setLiveDragging(true);
 
     auto sliderBar = slider->getChildByType(0);
     sliderBar->setScaleY(1);
@@ -165,13 +175,14 @@ CCMenu* createSliderField(EffectGameObject* obj, std::string property) {
     auto arr = CCArray::create();
     arr->addObject(obj);
     arr->addObject(CCString::create(property));
+    arr->addObject(linkedField);
     slider->setUserObject(arr);
 
     auto menu = CCMenu::create();
     menu->addChild(slider);
     menu->setPosition(ccp(-234.5, -136));
     menu->setScale(0.325);
-    return menu;
+    return { menu, slider };
 }
 
 CCMenu* createToggleField(EffectGameObject* obj, std::string property) {
@@ -278,7 +289,7 @@ void createInspector(GameObject* p0, int tab) {
                 },
                 std::to_string(obj->m_targetGroupID).c_str(),
                 4
-            );
+            ).menu;
         }
         if (property == "Fade Duration") {
             propertyField = createNumberField(
@@ -288,22 +299,34 @@ void createInspector(GameObject* p0, int tab) {
                 floatToFormattedString(obj->m_duration, 2).c_str(),
                 0,
                 "1234567890."
-            );
+            ).menu;
         }
         if (property == "Opacity") {
-            propertyField = createNumberField(
-                [obj] (const std::string& input) {
+            auto sliderPtr = std::make_shared<Slider*>(nullptr);
+            auto propertyFieldMenu = createNumberField(
+                [obj, sliderPtr](const std::string& input) {
                     if (input.find_first_of("1234567890") != std::string::npos) {
-                        if (std::stof(input) <= 1) obj->m_opacity = std::stof(input);
+                            float val = std::stof(input);
+                            if (val <= 1.0f) {
+                                obj->m_opacity = val;
+                                if (*sliderPtr) {
+                                    (*sliderPtr)->setValue(val);
+                                }
+                            }
                     }
                 },
-                floatToFormattedString(obj->m_opacity, 2).c_str(),
+                floatToFormattedString(obj->m_opacity, 2),
                 0,
                 "1234567890."
             );
+            auto [sliderMenu, createdSlider] = createSliderField(obj, property, propertyFieldMenu.field);
+            *sliderPtr = createdSlider;
+            propertyField = propertyFieldMenu.menu;
             bonusWrapper = CCNode::create();
-            bonusWrapper->addChild(createSliderField(obj, property));
+            bonusWrapper->addChild(sliderMenu);
         }
+        
+        
 
         auto label = CCLabelBMFont::create(labelText.c_str(), "bigFont.fnt");
         label->setAnchorPoint({ 0.f, 0.f });
@@ -390,9 +413,6 @@ class $modify(InspectorPanel, EditorUI) {
     bool init(LevelEditorLayer* p0) {
 		if (!EditorUI::init(p0)) return false;
         ui = this;
-
-        
-
         return true;
     }
 };
