@@ -60,7 +60,12 @@ class InspectorInput : public CCLayer {
         auto property = static_cast<CCString*>(array->objectAtIndex(1))->m_sString;
 
         if (property == "Trigger Type") {
-            static int state = 0;
+            int state = 2;
+            if (obj->m_isSpawnTriggered) {
+                state = 0;
+            } else if (obj->m_isTouchTriggered) {
+                state = 1;
+            }
             state = (state + 1) % 3;
 
             const char* labels[] = { "Spawn", "Touch", "Time" };
@@ -136,7 +141,7 @@ CCMenu* createSliderField(EffectGameObject* obj, std::string property) {
     auto slider = Slider::create(
         ui,
         menu_selector(InspectorInput::onSlider),
-        2
+        1.5
     );
     
     if (property == "Opacity") {
@@ -145,6 +150,17 @@ CCMenu* createSliderField(EffectGameObject* obj, std::string property) {
     
     slider->setAnchorPoint({0, 0});
     slider->setPosition({300, 100});
+
+    auto sliderBar = slider->getChildByType(0);
+    sliderBar->setScaleY(1);
+    auto sliderBtn1 = slider->getChildByType(1)->getChildByType(0)->getChildByType(0);
+    sliderBtn1->setPosition(sliderBtn1->getContentSize() / 2);
+    sliderBtn1->setScale(0.650);
+    sliderBtn1->setAnchorPoint(ccp(0.5, 0.5));
+    auto sliderBtn2 = slider->getChildByType(1)->getChildByType(0)->getChildByType(1);
+    sliderBtn2->setPosition(sliderBtn2->getContentSize() / 2);
+    sliderBtn2->setScale(0.650);
+    sliderBtn2->setAnchorPoint(ccp(0.5, 0.5));
     
     auto arr = CCArray::create();
     arr->addObject(obj);
@@ -153,7 +169,7 @@ CCMenu* createSliderField(EffectGameObject* obj, std::string property) {
 
     auto menu = CCMenu::create();
     menu->addChild(slider);
-    menu->setPosition(ccp(-232, -136));
+    menu->setPosition(ccp(-234.5, -136));
     menu->setScale(0.325);
     return menu;
 }
@@ -309,6 +325,19 @@ void createInspector(GameObject* p0, int tab) {
         109,
         194
     );
+
+    auto layT = ColumnLayout::create();
+    layT->setAxisReverse(true);
+    layT->setCrossAxisAlignment(AxisAlignment::Start);
+    layT->setCrossAxisLineAlignment(AxisAlignment::Start);
+    layT->setGrowCrossAxis(false);
+    layT->setAxisAlignment(AxisAlignment::End);
+    layT->setGap(0);
+    auto listing = inspectorList->getChildByType(0)->getChildByType(0);
+    listing->setScaledContentSize(CCSize(109, 193));
+    listing->setPosition(ccp(0, 0));
+    listing->setLayout(layT);
+
     inspectorList->setPosition(ccp(451.5, 103.5));
     inspectorList->setZOrder(1);
     inspectorList->setTouchEnabled(true);

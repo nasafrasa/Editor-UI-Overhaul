@@ -88,7 +88,7 @@ class $modify(ArrangeUI, EditorUI) {
             { {108, 150}, {76, 130} },      // Undo Controls
             { {108, 150}, {39, 42} },       // Editor Modes
             { {214, 150}, {506, 67} },      // Edit Buttons
-            { {271, 120}, {294, 0} },       // Pan Bar
+            { {636, 120}, {254, 0} },       // Pan Bar
         };
         auto spriteID = 0;
         for (const auto& panel : translucentPanels) {
@@ -205,18 +205,29 @@ class $modify(ArrangeUI, EditorUI) {
         //editGroup->removeFromParent();
         //editSpecial->removeFromParent();
 
+        // position-slider
+        auto positionSlider = this->getChildByID("position-slider");
+        positionSlider->setScale(1.575);
+        positionSlider->setPosition(CCPoint(417, 106));
+        auto sliderBar = positionSlider->getChildByType(0);
+        sliderBar->setScaleY(0.25);
+        auto sliderBtn1 = positionSlider->getChildByType(1)->getChildByType(0)->getChildByType(0);
+        sliderBtn1->setPosition(ccp(12, 20));
+        sliderBtn1->setScale(0.35);
+        sliderBtn1->setAnchorPoint(ccp(0, 0.5));
+        auto sliderBtn2 = positionSlider->getChildByType(1)->getChildByType(0)->getChildByType(1);
+        sliderBtn2->setPosition(ccp(12, 20));
+        sliderBtn2->setScale(0.35);
+        sliderBtn2->setAnchorPoint(ccp(0, 0.5));
+
         // object-info-label
         auto objectInfoLabel = this->getChildByID("object-info-label");
         objectInfoLabel->setScale(0.35);
         objectInfoLabel->setPosition(CCPoint(108, 270));
-        // position-slider
-        auto positionSlider = this->getChildByID("position-slider");
-        positionSlider->setScale(0.575);
-        positionSlider->setPosition(CCPoint(173, -53));
         // toolbar-categories-menu
         auto toolbarCatergoriesMenu = this->getChildByID("toolbar-categories-menu");
         toolbarCatergoriesMenu->setScale(0.6);
-        toolbarCatergoriesMenu->setPosition(CCPoint(39, 33));
+        toolbarCatergoriesMenu->setPosition(CCPoint(39, 34));
         // toolbar-toggles-menu
         auto toolbarTogglesMenu = this->getChildByID("toolbar-toggles-menu");
         toolbarTogglesMenu->setScale(0.5);
