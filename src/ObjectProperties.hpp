@@ -7,3 +7,5 @@ struct ObjectProperties {
 };
 
 extern const std::vector<ObjectProperties> objectInsProp;
+
+std::string getNameFromID(int objectID);

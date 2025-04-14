@@ -56,7 +56,7 @@ class InspectorInput : public CCLayer {
             obj->m_opacity = thumb->getValue();
             linkedField->setString(floatToFormattedString(thumb->getValue(), 2));
         }
-        if (property == "Fade Duration") {
+        if (property == "Duration") {
             obj->m_duration = thumb->getValue() * 10.f;
             linkedField->setString(floatToFormattedString(thumb->getValue() * 10.f, 2));
             ui->moveObject(obj, {0, 1}); // theres probably a better way to do this LMAOOOOO
@@ -162,7 +162,7 @@ std::pair<CCMenu*, Slider*> createSliderField(
     if (property == "Opacity") {
         slider->setValue(obj->m_opacity);
     }
-    if (property == "Fade Duration") {
+    if (property == "Duration") {
         slider->setValue(obj->m_duration / 10.f);
     }
     
@@ -239,6 +239,22 @@ void createInspector(GameObject* p0, int tab) {
     std::vector<std::string> propertyNames = {" "};
     auto inspectorTitleText = "Joe H. Bruh";
 
+    // Check for checkboxes
+    std::vector<int> simpleTriggers = {
+        33,
+        32,
+        1613,
+        1612,
+        1818,
+        1819,
+        1917
+    };
+    bool isSimpleTrigger = std::find(
+        simpleTriggers.begin(),
+        simpleTriggers.end(),
+        obj->m_objectID
+    ) != simpleTriggers.end();
+
     // Get specific properties for the object and tab
     for (const auto& object : objectInsProp) {
         if (obj->m_objectID == object.id) {
@@ -250,6 +266,16 @@ void createInspector(GameObject* p0, int tab) {
             propertyNames = {" "};
             inspectorTitleText = "Work In Progress";
         }
+    }
+
+    if (isSimpleTrigger) {
+        tab = getTab(obj);
+        std::vector<std::vector<std::string>> defaultProperties = {
+            { "Trigger Type" },
+            { "Trigger Type", "Multi Trigger" }
+        };
+        propertyNames = defaultProperties[tab];
+        inspectorTitleText = getNameFromID(obj->m_objectID).c_str();
     }
 
 
@@ -300,7 +326,7 @@ void createInspector(GameObject* p0, int tab) {
                 4
             ).menu;
         }
-        if (property == "Fade Duration") {
+        if (property == "Duration") {
             auto sliderPtr = std::make_shared<Slider*>(nullptr);
             auto propertyFieldMenu = createNumberField(
                 [obj, sliderPtr](const std::string& input) {
@@ -321,6 +347,9 @@ void createInspector(GameObject* p0, int tab) {
             propertyField = propertyFieldMenu.menu;
             bonusWrapper = CCNode::create();
             bonusWrapper->addChild(sliderMenu);
+            if (obj->m_objectID == 1007) {
+                labelText = "Fade Duration";
+            }
         }
         if (property == "Opacity") {
             auto sliderPtr = std::make_shared<Slider*>(nullptr);
