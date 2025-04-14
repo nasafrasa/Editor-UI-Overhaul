@@ -2,6 +2,7 @@
 #include <Geode/modify/EditorUI.hpp>
 #include "Geode/cocos/cocoa/CCString.h"
 #include "ObjectProperties.hpp"
+#include <Geode/binding/GameManager.hpp>
 
 using namespace geode::prelude;
 EditorUI* ui;
@@ -55,6 +56,10 @@ class InspectorInput : public CCLayer {
         if (property == "Opacity") {
             obj->m_opacity = thumb->getValue();
             linkedField->setString(floatToFormattedString(thumb->getValue(), 2));
+        }
+        if (property == "Fade Duration") {
+            obj->m_duration = thumb->getValue() * 10.f;
+            linkedField->setString(floatToFormattedString(thumb->getValue() * 10.f, 2));
         }
     }
 
@@ -155,6 +160,9 @@ std::pair<CCMenu*, Slider*> createSliderField(
     slider->setValue(0);
     if (property == "Opacity") {
         slider->setValue(obj->m_opacity);
+    }
+    if (property == "Fade Duration") {
+        slider->setValue(obj->m_duration / 10.f);
     }
     
     slider->setAnchorPoint({0, 0});
@@ -292,14 +300,26 @@ void createInspector(GameObject* p0, int tab) {
             ).menu;
         }
         if (property == "Fade Duration") {
-            propertyField = createNumberField(
-                [obj] (const std::string& input) {
-                    if (input.find_first_of("1234567890") != std::string::npos) obj->m_duration = std::stof(input);
+            auto sliderPtr = std::make_shared<Slider*>(nullptr);
+            auto propertyFieldMenu = createNumberField(
+                [obj, sliderPtr](const std::string& input) {
+                    if (input.find_first_of("1234567890") != std::string::npos) {
+                        float val = std::stof(input);
+                        obj->m_duration = std::stof(input);
+                        if (*sliderPtr) {
+                            (*sliderPtr)->setValue(val / 10.f);
+                        }
+                    }
                 },
                 floatToFormattedString(obj->m_duration, 2).c_str(),
                 0,
                 "1234567890."
-            ).menu;
+            );
+            auto [sliderMenu, createdSlider] = createSliderField(obj, property, propertyFieldMenu.field);
+            *sliderPtr = createdSlider;
+            propertyField = propertyFieldMenu.menu;
+            bonusWrapper = CCNode::create();
+            bonusWrapper->addChild(sliderMenu);
         }
         if (property == "Opacity") {
             auto sliderPtr = std::make_shared<Slider*>(nullptr);
