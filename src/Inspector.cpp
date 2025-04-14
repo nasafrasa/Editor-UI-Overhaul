@@ -2,7 +2,6 @@
 #include <Geode/modify/EditorUI.hpp>
 #include "Geode/cocos/cocoa/CCString.h"
 #include "ObjectProperties.hpp"
-#include <Geode/binding/GameManager.hpp>
 
 using namespace geode::prelude;
 EditorUI* ui;
@@ -60,6 +59,8 @@ class InspectorInput : public CCLayer {
         if (property == "Fade Duration") {
             obj->m_duration = thumb->getValue() * 10.f;
             linkedField->setString(floatToFormattedString(thumb->getValue() * 10.f, 2));
+            ui->moveObject(obj, {0, 1}); // theres probably a better way to do this LMAOOOOO
+            ui->moveObject(obj, {0, -1});
         }
     }
 
